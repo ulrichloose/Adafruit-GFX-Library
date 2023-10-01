@@ -1185,9 +1185,11 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     uint16_t bo = pgm_read_word(&glyph->bitmapOffset);
     uint8_t w = pgm_read_byte(&glyph->width), h = pgm_read_byte(&glyph->height);
     int8_t xo = pgm_read_byte(&glyph->xOffset),
-           yo = pgm_read_byte(&glyph->yOffset);
+           yo = pgm_read_byte(&glyph->yOffset),
+		   xa = pgm_read_byte(&glyph->xAdvance),
+		   ya = pgm_read_byte(&gfxFont->yAdvance);
     uint8_t xx, yy, bits = 0, bit = 0;
-    int16_t xo16 = 0, yo16 = 0;
+	int16_t xo16 = 0, yo16 = 0;
 
     if (size_x > 1 || size_y > 1) {
       xo16 = xo;
@@ -1212,7 +1214,10 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     // displays supporting setAddrWindow() and pushColors()), but haven't
     // implemented this yet.
 
-    startWrite();
+	startWrite();
+	if (bg != color) {
+	writeFillRect(x, y, xa, -ya, bg);
+	}
     for (yy = 0; yy < h; yy++) {
       for (xx = 0; xx < w; xx++) {
         if (!(bit++ & 7)) {
