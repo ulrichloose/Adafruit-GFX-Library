@@ -1177,6 +1177,10 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     // Character is assumed previously filtered by write() to eliminate
     // newlines, returns, non-printable characters, etc.  Calling
     // drawChar() directly with 'bad' characters of font may cause mayhem!
+	  
+    GFXglyph *gly = pgm_read_glyph_ptr(gfxFont, 0); // First Character space
+    uint8_t gh = pgm_read_byte(&gly->height);
+    int8_t gyo = pgm_read_byte(&gly->yOffset);
 
     c -= (uint8_t)pgm_read_byte(&gfxFont->first);
     GFXglyph *glyph = pgm_read_glyph_ptr(gfxFont, c);
@@ -1186,10 +1190,9 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     uint8_t w = pgm_read_byte(&glyph->width), h = pgm_read_byte(&glyph->height);
     int8_t xo = pgm_read_byte(&glyph->xOffset),
            yo = pgm_read_byte(&glyph->yOffset),
-		   xa = pgm_read_byte(&glyph->xAdvance),
-		   ya = pgm_read_byte(&gfxFont->yAdvance);
+		   xa = pgm_read_byte(&glyph->xAdvance);
     uint8_t xx, yy, bits = 0, bit = 0;
-	int16_t xo16 = 0, yo16 = 0;
+    int16_t xo16 = 0, yo16 = 0;
 
     if (size_x > 1 || size_y > 1) {
       xo16 = xo;
@@ -1216,7 +1219,8 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 
 	startWrite();
 	if (bg != color) {
-	writeFillRect(x, y, xa, -ya, bg);
+		//writeFillRect(x, y + ((h + yo) * size_y -1) , xa * size_x, (- h - 1) * size_y  + size_y, bg);
+		writeFillRect(x, y + ((gh + gyo) * size_y -1) , xa * size_x, (- gh - 1) * size_y  + size_y, bg);
 	}
     for (yy = 0; yy < h; yy++) {
       for (xx = 0; xx < w; xx++) {
