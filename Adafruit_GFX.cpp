@@ -1222,22 +1222,34 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 		//writeFillRect(x, y + ((h + yo) * size_y -1) , xa * size_x, (- h - 1) * size_y  + size_y, bg);
 		writeFillRect(x, y + ((gh + gyo) * size_y -1) , xa * size_x, (- gh - 1) * size_y  + size_y, bg);
 	}
-    for (yy = 0; yy < h; yy++) {
-      for (xx = 0; xx < w; xx++) {
-        if (!(bit++ & 7)) {
-          bits = pgm_read_byte(&bitmap[bo++]);
-        }
-        if (bits & 0x80) {
-          if (size_x == 1 && size_y == 1) {
-            writePixel(x + xo + xx, y + yo + yy, color);
-          } else {
-            writeFillRect(x + (xo16 + xx) * size_x, y + (yo16 + yy) * size_y,
-                          size_x, size_y, color);
+	
+	// GFXFF rendering speed up
+	// Found at https://github.com/Bodmer/TFT_eSPI
+	
+      uint16_t hpc = 0; // Horizontal foreground pixel count
+      for(yy=0; yy<h; yy++) {
+        for(xx=0; xx<w; xx++) {
+          if(bit == 0) {
+            bits = pgm_read_byte(&bitmap[bo++]);
+            bit  = 0x80;
           }
+          if(bits & bit) hpc++;
+          else {
+           if (hpc) {
+              if(size_x == 1 && size_y == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+              else fillRect(x+(xo16+xx-hpc)*size_x, y+(yo16+yy)*size_y, size_x*hpc, size_y, color);
+              hpc=0;
+            }
+          }
+          bit >>= 1;
         }
-        bits <<= 1;
+        // Draw pixels for this line as we are about to increment yy
+        if (hpc) {
+          if(size_x == 1 && size_y == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
+          else fillRect(x+(xo16+xx-hpc)*size_x, y+(yo16+yy)*size_y, size_x*hpc, size_y, color);
+          hpc=0;
+        }
       }
-    }
     endWrite();
 
   } // End classic vs custom font
