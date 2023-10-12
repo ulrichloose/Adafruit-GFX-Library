@@ -5,6 +5,7 @@
 #include "Tandy2K8px7b.h"
 #include "Tandy2K16px7b.h"
 #include "DSEG7Classic_Bold18px7b.h"
+#include "DSEG7Classic_Bold36px7b.h"
 
 #define TFT_CS 10
 #define TFT_RST 9
@@ -27,7 +28,6 @@ void setup(void) {
   tft.setFont(&Tandy2K8px7b);
   tft.setCursor(0, 15);
   tft.print("QWER qwer 012");
-  tft.setTextColor(ST77XX_WHITE, ST7735_BLACK);
   tft.setCursor(0, 24);
   tft.print("QWER qwer 012");
   tft.setTextColor(ST77XX_WHITE, ST77XX_WHITE);
@@ -44,8 +44,8 @@ void setup(void) {
   tft.print("QWER qwer 012");
 
   tft.setTextColor(ST77XX_WHITE, ST7735_BLACK);
-  tft.setFont(&DSEG7Classic_Bold18px7b);
-  tft.setTextSize(2);
+  tft.setFont(&DSEG7Classic_Bold36px7b);
+  tft.setTextSize(1);
   tft.setCursor(0, 120);
   tft.print("23:24");
 }
@@ -54,9 +54,22 @@ void loop() {
   tft.setFont(&DSEG7Classic_Bold18px7b);
   tft.setTextSize(1);
 
+  unsigned long StartTime = millis();
+
+  for (long freq = 0; freq <= 1000; freq++) {
+    format(freq, 0, 76);
+  }
+
+  format(millis() - StartTime, 0, 76);
+
+  delay(2000);
+
+/*
   for (long freq = 0; freq < 12345678; freq = freq + 111) {
     format(freq, 0, 76);
   }
+*/
+
 }
 
 void format(long f, int x, int y) {

@@ -1226,6 +1226,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 	// GFXFF rendering speed up
 	// Found at https://github.com/Bodmer/TFT_eSPI
 	
+	#ifdef FAST_TEXT	
       uint16_t hpc = 0; // Horizontal foreground pixel count
       for(yy=0; yy<h; yy++) {
         for(xx=0; xx<w; xx++) {
@@ -1250,6 +1251,24 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
           hpc=0;
         }
       }
+	#else
+	  for (yy = 0; yy < h; yy++) {
+	        for (xx = 0; xx < w; xx++) {
+	          if (!(bit++ & 7)) {
+	            bits = pgm_read_byte(&bitmap[bo++]);
+	          }
+	          if (bits & 0x80) {
+	            if (size_x == 1 && size_y == 1) {
+	              writePixel(x + xo + xx, y + yo + yy, color);
+	            } else {
+	              writeFillRect(x + (xo16 + xx) * size_x, y + (yo16 + yy) * size_y,
+	                            size_x, size_y, color);
+	            }
+	          }
+	          bits <<= 1;
+	        }
+	      }
+	#endif
     endWrite();
 
   } // End classic vs custom font
