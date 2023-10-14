@@ -23,7 +23,7 @@ const uint8_t DSEG7Classic_Bold18px7bBitmaps[] PROGMEM = {
 
 const GFXglyph DSEG7Classic_Bold18px7bGlyphs[] PROGMEM = {
   {     0,   1,  18,  15,    0,  -17 },   // 0x20 ' '
-  {     3,   1,  18,   2,    0,  -17 },   // 0x21 '!'
+  {     3,   1,   1,   2,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
   {     0,   0,   0,   0,    0,    0 },   // 0x23 '#'
   {     0,   0,   0,   0,    0,    0 },   // 0x24 '$'

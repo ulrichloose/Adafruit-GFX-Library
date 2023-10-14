@@ -5,7 +5,7 @@
 #include "Tandy2K8px7b.h"
 #include "Tandy2K16px7b.h"
 #include "DSEG7Classic_Bold18px7b.h"
-//#include "DSEG7Classic_Bold36px7b.h"
+#include "DSEG7Classic_Bold36px7b.h"
 
 #define TFT_CS 10
 #define TFT_RST 9
@@ -41,11 +41,7 @@ void setup(void) {
   tft.print("QWER qwer 012");
   tft.setTextColor(ST77XX_WHITE);
   tft.setCursor(1, 49);
-  tft.print("QWER qwer 012"); // makes the String "bold" with 1 pixel shift to right.
-  delay(2000);
-  tft.setTextColor(ST77XX_WHITE, ST7735_BLUE);
-  tft.setCursor(0, 49);
-  tft.print("QWER qwer 012"); // reset to non bold.
+  tft.print("QWER qwer 012");
 
   tft.setTextColor(ST77XX_WHITE, ST7735_BLUE);
   tft.setFont(&DSEG7Classic_Bold18px7b);
@@ -55,6 +51,7 @@ void setup(void) {
 }
 
 void loop() {
+  tft.setTextColor(ST77XX_WHITE, ST7735_BLUE);
   tft.setFont(&DSEG7Classic_Bold18px7b);
   tft.setTextSize(1);
 
@@ -86,6 +83,7 @@ void format(long f, int x, int y) {
   buff0[5] > char(32) ? buff0[6] = '.' : buff0[6] = '!';
 
   tft.setCursor(x, y);
+  //tft.print(buff0);
 
   for (int i = 0; i < 10; i++) {
     if (buff0[i] == buff1[i]) {  // do not print this digit, add xAdvance to x

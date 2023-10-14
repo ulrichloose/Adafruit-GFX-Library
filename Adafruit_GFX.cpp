@@ -1172,13 +1172,13 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     }
     endWrite();
 
-  } else { // Custom font
+  } else {  // Custom font
 
     // Character is assumed previously filtered by write() to eliminate
     // newlines, returns, non-printable characters, etc.  Calling
     // drawChar() directly with 'bad' characters of font may cause mayhem!
-	  
-    GFXglyph *gly = pgm_read_glyph_ptr(gfxFont, 0); // First Character space
+
+    GFXglyph *gly = pgm_read_glyph_ptr(gfxFont, 0);  // First Character space
     uint8_t gh = pgm_read_byte(&gly->height);
     int8_t gyo = pgm_read_byte(&gly->yOffset);
 
@@ -1190,7 +1190,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     uint8_t w = pgm_read_byte(&glyph->width), h = pgm_read_byte(&glyph->height);
     int8_t xo = pgm_read_byte(&glyph->xOffset),
            yo = pgm_read_byte(&glyph->yOffset),
-		   xa = pgm_read_byte(&glyph->xAdvance);
+           xa = pgm_read_byte(&glyph->xAdvance);
     uint8_t xx, yy, bits = 0, bit = 0;
     int16_t xo16 = 0, yo16 = 0;
 
@@ -1217,61 +1217,43 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
     // displays supporting setAddrWindow() and pushColors()), but haven't
     // implemented this yet.
 
-	startWrite();
-	if (bg != color) {
-		//writeFillRect(x, y + ((h + yo) * size_y -1) , xa * size_x, (- h - 1) * size_y  + size_y, bg);
-		writeFillRect(x, y + ((gh + gyo) * size_y -1) , xa * size_x, (- gh - 1) * size_y  + size_y, bg);
-	}
-	
-	// GFXFF rendering speed up
-	// Found at https://github.com/Bodmer/TFT_eSPI
-	
-	#ifdef FAST_TEXT	
-      uint16_t hpc = 0; // Horizontal foreground pixel count
-      for(yy=0; yy<h; yy++) {
-        for(xx=0; xx<w; xx++) {
-          if(bit == 0) {
-            bits = pgm_read_byte(&bitmap[bo++]);
-            bit  = 0x80;
-          }
-          if(bits & bit) hpc++;
-          else {
-           if (hpc) {
-              if(size_x == 1 && size_y == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-              else fillRect(x+(xo16+xx-hpc)*size_x, y+(yo16+yy)*size_y, size_x*hpc, size_y, color);
-              hpc=0;
-            }
-          }
-          bit >>= 1;
-        }
-        // Draw pixels for this line as we are about to increment yy
-        if (hpc) {
-          if(size_x == 1 && size_y == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
-          else fillRect(x+(xo16+xx-hpc)*size_x, y+(yo16+yy)*size_y, size_x*hpc, size_y, color);
-          hpc=0;
-        }
-      }
-	#else
-	  for (yy = 0; yy < h; yy++) {
-	        for (xx = 0; xx < w; xx++) {
-	          if (!(bit++ & 7)) {
-	            bits = pgm_read_byte(&bitmap[bo++]);
-	          }
-	          if (bits & 0x80) {
-	            if (size_x == 1 && size_y == 1) {
-	              writePixel(x + xo + xx, y + yo + yy, color);
-	            } else {
-	              writeFillRect(x + (xo16 + xx) * size_x, y + (yo16 + yy) * size_y,
-	                            size_x, size_y, color);
-	            }
-	          }
-	          bits <<= 1;
-	        }
-	      }
-	#endif
-    endWrite();
+    startWrite();
+    // GFXFF rendering speed up
+    // Found at https://github.com/Bodmer/TFT_eSPI
 
-  } // End classic vs custom font
+    if (bg != color) { // this works fast but with small flicker, needs a patched fond with the first Character in full hight.
+      writeFillRect(x, y + ((gh + gyo) * size_y - 1), xa * size_x, (-gh - 1) * size_y + size_y, bg);
+    }
+    uint16_t hpc = 0;  // Horizontal foreground pixel count
+    for (yy = 0; yy < h; yy++) {
+      /*if (bg != color) { // this is slower but has no/minimal flicker, needs a font with all characters with full pixels.
+          if (size_x == 1 && size_y == 1) drawFastHLine(x, y + yo + yy, xa * size_x, bg);
+          else fillRect(x, y + (yo + yy) * size_y, xa * size_x, size_y, bg);
+      }*/
+      for (xx = 0; xx < w; xx++) {
+        if (bit == 0) {
+          bits = pgm_read_byte(&bitmap[bo++]);
+          bit = 0x80;
+        }
+        if (bits & bit) hpc++;
+        else {
+          if (hpc) {
+            if (size_x == 1 && size_y == 1) drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, color);
+            else fillRect(x + (xo16 + xx - hpc) * size_x, y + (yo16 + yy) * size_y, size_x * hpc, size_y, color);
+            hpc = 0;
+          }
+        }
+        bit >>= 1;
+      }
+      // Draw pixels for this line as we are about to increment yy
+      if (hpc) {
+        if (size_x == 1 && size_y == 1) drawFastHLine(x + xo + xx - hpc, y + yo + yy, hpc, color);
+        else fillRect(x + (xo16 + xx - hpc) * size_x, y + (yo16 + yy) * size_y, size_x * hpc, size_y, color);
+        hpc = 0;
+      }
+    }
+    endWrite();
+  }  // End classic vs custom font
 }
 /**************************************************************************/
 /*!
