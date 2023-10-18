@@ -1,8 +1,6 @@
 #ifndef _ADAFRUIT_GFX_H
 #define _ADAFRUIT_GFX_H
 
-#define FAST_TEXT // Enable faster drawing of glyphs
-
 #if ARDUINO >= 100
 #include "Arduino.h"
 #include "Print.h"
